@@ -1,0 +1,4 @@
+[plugin]
+description = "dokku plugin to copy files from the host to the built docker image"
+version = "1.0.0"
+[plugin.config]
