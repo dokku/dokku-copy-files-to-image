@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
-APP="$1"; IMAGE_TAG="$2"; IMAGE=$(get_app_image_name $APP $IMAGE_TAG); FILE_ROOT="$DOKKU_ROOT/$APP/DOKKU_FILES"
+
+BUILDER_TYPE="$1"; APP="$2"; IMAGE=$3; FILE_ROOT="$DOKKU_ROOT/$APP/DOKKU_FILES"
 verify_app_name "$APP"
 
 if [[ -d "$FILE_ROOT" ]] && [[ -n $(ls -p "$FILE_ROOT") ]]; then
@@ -9,7 +10,7 @@ if [[ -d "$FILE_ROOT" ]] && [[ -n $(ls -p "$FILE_ROOT") ]]; then
   for path in $FILE_ROOT/*; do
     file=$(basename $path)
     dokku_log_verbose "- Copying $file"
-    id=$(docker run -i -a stdin $IMAGE /bin/bash -c "cat > /app/$file" < "$path")
+    id=$("$DOCKER_BIN" container run -i -a stdin $IMAGE /bin/bash -c "cat > /app/$file" < "$path")
     test "$(docker wait $id)" -eq 0
     docker commit $id $IMAGE > /dev/null
     docker stop $id > /dev/null 2>&1 || true
